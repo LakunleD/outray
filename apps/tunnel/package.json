@@ -1,11 +1,11 @@
 {
-  "name": "outray-server",
+  "name": "outray-tunnel",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server/src/server.js"
+    "start": "node dist/apps/tunnel/src/server.js"
   },
   "dependencies": {
     "ws": "^8.18.0"

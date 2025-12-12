@@ -20,20 +20,20 @@ jobs:
           npm install
           cd apps/web && npm install
 
-      - name: Build Server
+      - name: Build Tunnel
         run: |
-          cd apps/server
+          cd apps/tunnel
           npm run build
 
-      - name: Deploy Server Files
+      - name: Deploy Tunnel Files
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: "apps/server/dist,apps/server/package.json"
-          target: "/root/outray/server"
+          source: "apps/tunnel/dist,apps/tunnel/package.json"
+          target: "/root/outray/tunnel"
           strip_components: 2
 
       - name: Deploy Script
