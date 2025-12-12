@@ -6,7 +6,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import "../index.css";
+import appCss from "../index.css?url";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -20,6 +20,12 @@ export const Route = createRootRoute({
       },
       {
         title: "OutRay - an open source alternative to ngrok",
+      },
+    ],
+    links: [
+      {
+        rel: "stylesheet",
+        href: appCss,
       },
     ],
   }),
