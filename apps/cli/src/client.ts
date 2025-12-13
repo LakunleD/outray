@@ -8,13 +8,22 @@ export class OutRayClient {
   private ws: WebSocket | null = null;
   private localPort: number;
   private serverUrl: string;
+  private apiKey?: string;
+  private subdomain?: string;
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private shouldReconnect = true;
   private assignedUrl: string | null = null;
 
-  constructor(localPort: number, serverUrl: string = "wss://api.outray.dev/") {
+  constructor(
+    localPort: number,
+    serverUrl: string = "wss://api.outray.dev/",
+    apiKey?: string,
+    subdomain?: string,
+  ) {
     this.localPort = localPort;
     this.serverUrl = serverUrl;
+    this.apiKey = apiKey;
+    this.subdomain = subdomain;
   }
 
   public start(): void {
@@ -51,7 +60,11 @@ export class OutRayClient {
   private handleOpen(): void {
     console.log(chalk.green(`🔌 Linked to your local port ${this.localPort}`));
 
-    const handshake = encodeMessage({ type: "open_tunnel" });
+    const handshake = encodeMessage({
+      type: "open_tunnel",
+      apiKey: this.apiKey,
+      subdomain: this.subdomain,
+    });
     this.ws?.send(handshake);
   }
 
