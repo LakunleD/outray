@@ -144,7 +144,7 @@ export class TunnelRouter {
   }
 
   private redisKey(tunnelId: string): string {
-    return `tunnel:active:${tunnelId}`;
+    return `tunnel:online:${tunnelId}`;
   }
 
   private async persistTunnelState(
