@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   Globe,
   Copy,
@@ -9,13 +10,38 @@ import {
   LayoutGrid,
   List,
   Search,
+  Loader2,
 } from "lucide-react";
+import { appClient } from "../../../lib/app-client";
 
 export const Route = createFileRoute("/dash/tunnels/")({
   component: TunnelsView,
 });
 
 function TunnelsView() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["tunnels"],
+    queryFn: () => appClient.tunnels.list(),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="animate-spin text-gray-500" size={24} />
+      </div>
+    );
+  }
+
+  if (error || (data && "error" in data)) {
+    return (
+      <div className="flex items-center justify-center h-64 text-red-500">
+        Failed to load tunnels
+      </div>
+    );
+  }
+
+  const tunnels = data && "tunnels" in data ? data.tunnels : [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
@@ -52,135 +78,87 @@ function TunnelsView() {
       </div>
 
       <div className="space-y-4">
-        <Link
-          to="/dash/tunnels/$tunnelId"
-          params={{ tunnelId: "api-production" }}
-          className="block group bg-black border border-white/5 rounded-lg p-4 hover:border-white/10 transition-all"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20">
-                <Globe size={20} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-medium text-white">
-                    api-production
-                  </h3>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                    HTTP
-                  </span>
+        {tunnels.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            No tunnels found. Start one using the CLI!
+          </div>
+        ) : (
+          tunnels.map((tunnel) => (
+            <Link
+              key={tunnel.id}
+              to="/dash/tunnels/$tunnelId"
+              params={{ tunnelId: tunnel.id }}
+              className="block group bg-black border border-white/5 rounded-lg p-4 hover:border-white/10 transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20">
+                    <Globe size={20} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-medium text-white">
+                        {tunnel.name || new URL(tunnel.url).hostname}
+                      </h3>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                        HTTP
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-gray-500 font-mono">
+                        {tunnel.url}
+                      </span>
+                      <button
+                        className="text-gray-600 hover:text-gray-400 transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigator.clipboard.writeText(tunnel.url);
+                        }}
+                      >
+                        <Copy size={12} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-gray-500 font-mono">
-                    https://api-production.outray.app
-                  </span>
-                  <button className="text-gray-600 hover:text-gray-400 transition-colors">
-                    <Copy size={12} />
+
+                <div className="flex items-center gap-8">
+                  <div className="flex items-center gap-6">
+                    <div className="text-right">
+                      <div className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mb-1">
+                        Status
+                      </div>
+                      <div className="flex items-center justify-end gap-2">
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            tunnel.isOnline
+                              ? "bg-green-500 animate-pulse"
+                              : "bg-red-500"
+                          }`}
+                        />
+                        <span className="text-sm font-mono text-gray-300 capitalize">
+                          {tunnel.isOnline ? "online" : "offline"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="h-8 w-px bg-white/5" />
+                    <div className="text-right">
+                      <div className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mb-1">
+                        Created
+                      </div>
+                      <div className="text-sm font-mono text-gray-300">
+                        {new Date(tunnel.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button className="p-2 text-gray-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
+                    <MoreVertical size={16} />
                   </button>
                 </div>
               </div>
-            </div>
-
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-6">
-                <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mb-1">
-                    Requests
-                  </div>
-                  <div className="text-sm font-mono text-gray-300">1,240/m</div>
-                </div>
-                <div className="h-8 w-px bg-white/5" />
-                <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mb-1">
-                    Latency
-                  </div>
-                  <div className="text-sm font-mono text-gray-300">45ms</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/5 border border-green-500/10 rounded-full">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-xs font-medium text-green-500">
-                    Online
-                  </span>
-                </div>
-                <button className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                  <MoreVertical size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 pt-4 border-t border-white/5 grid-cols-4 gap-4 hidden group-hover:grid transition-all">
-            <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full w-3/4 bg-blue-500/50 rounded-full" />
-            </div>
-          </div>
-        </Link>
-
-        <Link
-          to="/dash/tunnels/$tunnelId"
-          params={{ tunnelId: "local-dev-server" }}
-          className="block group bg-black border border-white/5 rounded-lg p-4 hover:border-white/10 transition-all"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20">
-                <Terminal size={20} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-medium text-white">
-                    local-dev-server
-                  </h3>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                    TCP
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-gray-500 font-mono">
-                    tcp://outray.app:8080
-                  </span>
-                  <button className="text-gray-600 hover:text-gray-400 transition-colors">
-                    <Copy size={12} />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-6">
-                <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mb-1">
-                    Connections
-                  </div>
-                  <div className="text-sm font-mono text-gray-300">12</div>
-                </div>
-                <div className="h-8 w-px bg-white/5" />
-                <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mb-1">
-                    Uptime
-                  </div>
-                  <div className="text-sm font-mono text-gray-300">4h 20m</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/5 border border-green-500/10 rounded-full">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-xs font-medium text-green-500">
-                    Online
-                  </span>
-                </div>
-                <button className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                  <MoreVertical size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </Link>
+            </Link>
+          ))
+        )}
       </div>
     </div>
   );
