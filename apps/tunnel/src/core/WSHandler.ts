@@ -132,29 +132,54 @@ export class WSHandler {
             let requestedSubdomain = message.subdomain;
             let reservationAcquired = false;
 
+            console.log(
+              `Requested subdomain from client: ${requestedSubdomain}`,
+            );
+            console.log(`Organization ID: ${organizationId}`);
+
             if (requestedSubdomain) {
               const check = await this.checkSubdomain(
                 requestedSubdomain,
                 organizationId,
               );
 
+              console.log(`Subdomain check result:`, check);
+
               if (!check.allowed) {
                 console.log(`Subdomain denied: ${check.error}`);
-                requestedSubdomain = undefined;
+                ws.send(
+                  Protocol.encode({
+                    type: "error",
+                    code: "SUBDOMAIN_DENIED",
+                    message: check.error || "Subdomain not available",
+                  }),
+                );
+                ws.close();
+                return;
               } else {
+                console.log(`Subdomain check passed: ${check.type}`);
                 reservationAcquired = await this.router.reserveTunnel(
                   requestedSubdomain,
                   {
                     organizationId,
                     userId,
                   },
+                  message.forceTakeover || false,
                 );
 
                 if (!reservationAcquired) {
                   console.log(
-                    `Subdomain ${requestedSubdomain} is currently reserved elsewhere.`,
+                    `Subdomain ${requestedSubdomain} is currently in use by another tunnel.`,
                   );
-                  requestedSubdomain = undefined;
+                  ws.send(
+                    Protocol.encode({
+                      type: "error",
+                      code: "SUBDOMAIN_IN_USE",
+                      message: `Subdomain ${requestedSubdomain} is currently in use. Please try again or use a different subdomain.`,
+                    }),
+                  );
+                  ws.close();
+                  return;
                 }
               }
             }
