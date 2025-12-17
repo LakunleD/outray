@@ -1,5 +1,6 @@
 import WebSocket from "ws";
 import chalk from "chalk";
+import prompts from "prompts";
 import { encodeMessage, decodeMessage } from "./protocol";
 import { TunnelDataMessage, TunnelResponseMessage } from "./types";
 import http from "http";
@@ -10,10 +11,13 @@ export class OutRayClient {
   private serverUrl: string;
   private apiKey?: string;
   private subdomain?: string;
+  private requestedSubdomain?: string;
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private pingInterval: NodeJS.Timeout | null = null;
   private shouldReconnect = true;
   private assignedUrl: string | null = null;
+  private subdomainConflictHandled = false;
+  private forceTakeover = false;
 
   constructor(
     localPort: number,
@@ -25,6 +29,7 @@ export class OutRayClient {
     this.serverUrl = serverUrl;
     this.apiKey = apiKey;
     this.subdomain = subdomain;
+    this.requestedSubdomain = subdomain;
   }
 
   public start(): void {
@@ -71,6 +76,7 @@ export class OutRayClient {
       type: "open_tunnel",
       apiKey: this.apiKey,
       subdomain: this.subdomain,
+      forceTakeover: this.forceTakeover,
     });
     this.ws?.send(handshake);
   }
@@ -85,17 +91,45 @@ export class OutRayClient {
         if (derivedSubdomain) {
           this.subdomain = derivedSubdomain;
         }
+        // Reset forceTakeover flag after successful connection
+        // Keep subdomainConflictHandled to detect takeovers
+        this.forceTakeover = false;
         console.log(chalk.magenta(`🌐 Tunnel ready: ${message.url}`));
         console.log(chalk.yellow("🥹 Don't close this or I'll cry softly."));
       } else if (message.type === "error") {
-        console.log(chalk.red(`❌ Error: ${message.message}`));
-        if (
-          message.code === "AUTH_FAILED" ||
-          message.code === "SUBDOMAIN_TAKEN"
-        ) {
+        if (message.code === "SUBDOMAIN_IN_USE") {
+          if (this.assignedUrl) {
+            // We had a successful connection before, but now subdomain is taken
+            // This means we were taken over by another tunnel
+            console.log(
+              chalk.yellow(
+                `\n⚠️  Your tunnel was taken over by another connection.`,
+              ),
+            );
+            console.log(
+              chalk.dim(
+                `   Subdomain "${this.subdomain}" is now in use elsewhere.`,
+              ),
+            );
+            this.shouldReconnect = false;
+            this.stop();
+            process.exit(0);
+          } else if (!this.subdomainConflictHandled) {
+            // First time encountering this subdomain conflict
+            this.subdomainConflictHandled = true;
+            this.shouldReconnect = false;
+            this.handleSubdomainConflict();
+          } else {
+            // Subdomain conflict but we already handled it, just log
+            console.log(chalk.red(`❌ Error: ${message.message}`));
+          }
+        } else if (message.code === "AUTH_FAILED") {
+          console.log(chalk.red(`❌ Error: ${message.message}`));
           this.shouldReconnect = false;
           this.stop();
           process.exit(1);
+        } else {
+          console.log(chalk.red(`❌ Error: ${message.message}`));
         }
       } else if (message.type === "request") {
         this.handleTunnelData(message);
@@ -186,6 +220,44 @@ export class OutRayClient {
     if (this.pingInterval) {
       clearInterval(this.pingInterval);
       this.pingInterval = null;
+    }
+  }
+
+  private async handleSubdomainConflict(): Promise<void> {
+    console.log(
+      chalk.yellow(
+        `\n⚠️  Subdomain "${this.requestedSubdomain}" is currently in use.`,
+      ),
+    );
+
+    const response = await prompts({
+      type: "select",
+      name: "action",
+      message: "What would you like to do?",
+      choices: [
+        { title: "Take over the existing tunnel", value: "takeover" },
+        { title: "Use a random subdomain instead", value: "random" },
+        { title: "Exit", value: "exit" },
+      ],
+      initial: 0,
+    });
+
+    if (response.action === "takeover") {
+      console.log(chalk.cyan("🔄 Taking over the existing tunnel..."));
+      this.subdomain = this.requestedSubdomain;
+      this.shouldReconnect = true;
+      this.forceTakeover = true;
+      this.connect();
+    } else if (response.action === "random") {
+      console.log(chalk.cyan("🎲 Opening tunnel with a random subdomain..."));
+      this.subdomain = undefined;
+      this.shouldReconnect = true;
+      this.forceTakeover = false;
+      this.connect();
+    } else {
+      console.log(chalk.cyan("👋 Goodbye!"));
+      this.stop();
+      process.exit(0);
     }
   }
 
