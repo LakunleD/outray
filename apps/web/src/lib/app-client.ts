@@ -117,4 +117,18 @@ export const appClient = {
     delete: async (id: string) =>
       apiCall<{ success: boolean }>("delete", `/api/subdomains/${id}`),
   },
+
+  stats: {
+    overview: async (organizationId: string) =>
+      apiCall<{
+        totalRequests: number;
+        requestsChange: number;
+        activeTunnels: number | null;
+        activeTunnelsChange: number;
+        totalDataTransfer: number;
+        dataTransferChange: number;
+      }>("get", "/api/stats/overview", {
+        params: { organizationId },
+      }),
+  },
 };
