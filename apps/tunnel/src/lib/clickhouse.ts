@@ -16,7 +16,7 @@ export interface TunnelEvent {
   method: string;
   path: string;
   status_code: number;
-  latency_ms: number;
+  request_duration_ms: number;
   bytes_in: number;
   bytes_out: number;
   client_ip: string;
