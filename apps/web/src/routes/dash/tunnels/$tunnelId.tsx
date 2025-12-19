@@ -89,7 +89,7 @@ function TunnelDetailView() {
                 ].map((height, i) => (
                   <div
                     key={i}
-                    className="flex-1 bg-blue-500/20 hover:bg-blue-500/40 transition-colors rounded-t-sm"
+                    className="flex-1 bg-accent/20 hover:bg-accent/40 transition-colors rounded-t-sm"
                     style={{ height: `${height}%` }}
                   />
                 ))}
