@@ -25,6 +25,7 @@ export const Route = createFileRoute("/api/stats/overview")({
 
         const url = new URL(request.url);
         const organizationId = url.searchParams.get("organizationId");
+        const timeRange = url.searchParams.get("range") || "24h";
 
         if (!organizationId) {
           return json({ error: "Organization ID required" }, { status: 400 });
@@ -43,11 +44,34 @@ export const Route = createFileRoute("/api/stats/overview")({
         }
 
         try {
+          let interval = "24 HOUR";
+          let prevIntervalStart = "48 HOUR";
+          let prevIntervalEnd = "24 HOUR";
+
+          switch (timeRange) {
+            case "1h":
+              interval = "1 HOUR";
+              prevIntervalStart = "2 HOUR";
+              prevIntervalEnd = "1 HOUR";
+              break;
+            case "7d":
+              interval = "7 DAY";
+              prevIntervalStart = "14 DAY";
+              prevIntervalEnd = "7 DAY";
+              break;
+            case "30d":
+              interval = "30 DAY";
+              prevIntervalStart = "60 DAY";
+              prevIntervalEnd = "30 DAY";
+              break;
+          }
+
           const totalRequestsResult = await clickhouse.query({
             query: `
               SELECT count() as total
               FROM tunnel_events
               WHERE organization_id = {organizationId:String}
+                AND timestamp >= now64() - INTERVAL ${interval}
             `,
             query_params: { organizationId },
             format: "JSONEachRow",
@@ -61,8 +85,8 @@ export const Route = createFileRoute("/api/stats/overview")({
               SELECT count() as total
               FROM tunnel_events
               WHERE organization_id = {organizationId:String}
-                AND timestamp >= now64() - INTERVAL 48 HOUR
-                AND timestamp < now64() - INTERVAL 24 HOUR
+                AND timestamp >= now64() - INTERVAL ${prevIntervalStart}
+                AND timestamp < now64() - INTERVAL ${prevIntervalEnd}
             `,
             query_params: { organizationId },
             format: "JSONEachRow",
@@ -70,7 +94,7 @@ export const Route = createFileRoute("/api/stats/overview")({
           const requestsYesterdayData =
             (await requestsYesterdayResult.json()) as Array<{ total: string }>;
           const requestsYesterday = parseInt(
-            requestsYesterdayData[0]?.total || "1",
+            requestsYesterdayData[0]?.total || "0",
           );
 
           const recentRequestsResult = await clickhouse.query({
@@ -78,7 +102,7 @@ export const Route = createFileRoute("/api/stats/overview")({
               SELECT count() as total
               FROM tunnel_events
               WHERE organization_id = {organizationId:String}
-                AND timestamp >= now64() - INTERVAL 24 HOUR
+                AND timestamp >= now64() - INTERVAL ${interval}
             `,
             query_params: { organizationId },
             format: "JSONEachRow",
@@ -90,7 +114,9 @@ export const Route = createFileRoute("/api/stats/overview")({
           const requestsChange =
             requestsYesterday > 0
               ? ((recentRequests - requestsYesterday) / requestsYesterday) * 100
-              : 0;
+              : recentRequests > 0
+                ? 100
+                : 0;
 
           const dataTransferResult = await clickhouse.query({
             query: `
@@ -99,6 +125,7 @@ export const Route = createFileRoute("/api/stats/overview")({
                 sum(bytes_out) as total_out
               FROM tunnel_events
               WHERE organization_id = {organizationId:String}
+                AND timestamp >= now64() - INTERVAL ${interval}
             `,
             query_params: { organizationId },
             format: "JSONEachRow",
@@ -118,8 +145,8 @@ export const Route = createFileRoute("/api/stats/overview")({
                 sum(bytes_out) as total_out
               FROM tunnel_events
               WHERE organization_id = {organizationId:String}
-                AND timestamp >= now64() - INTERVAL 48 HOUR
-                AND timestamp < now64() - INTERVAL 24 HOUR
+                AND timestamp >= now64() - INTERVAL ${prevIntervalStart}
+                AND timestamp < now64() - INTERVAL ${prevIntervalEnd}
             `,
             query_params: { organizationId },
             format: "JSONEachRow",
@@ -142,7 +169,7 @@ export const Route = createFileRoute("/api/stats/overview")({
                 sum(bytes_out) as total_out
               FROM tunnel_events
               WHERE organization_id = {organizationId:String}
-                AND timestamp >= now64() - INTERVAL 24 HOUR
+                AND timestamp >= now64() - INTERVAL ${interval}
             `,
             query_params: { organizationId },
             format: "JSONEachRow",
@@ -158,7 +185,9 @@ export const Route = createFileRoute("/api/stats/overview")({
           const dataTransferChange =
             bytesYesterday > 0
               ? ((bytesRecent - bytesYesterday) / bytesYesterday) * 100
-              : 0;
+              : bytesRecent > 0
+                ? 100
+                : 0;
 
           // Get active tunnels count from database and check Redis for online status
           const userTunnels = await db
@@ -192,27 +221,64 @@ export const Route = createFileRoute("/api/stats/overview")({
             }
           }
 
-          // Get hourly request counts for the last 24 hours
-          const chartDataResult = await clickhouse.query({
-            query: `
-              WITH hours AS (
-                SELECT toStartOfHour(now64() - INTERVAL number HOUR) as hour
+          // Get chart data based on time range
+          let chartQuery = "";
+          if (timeRange === "1h") {
+            chartQuery = `
+              WITH times AS (
+                SELECT toStartOfMinute(now64() - INTERVAL number MINUTE) as time
+                FROM numbers(60)
+              )
+              SELECT 
+                t.time as time,
+                countIf(e.organization_id = {organizationId:String}) as requests
+              FROM times t
+              LEFT JOIN tunnel_events e ON toStartOfMinute(e.timestamp) = t.time
+                AND e.organization_id = {organizationId:String}
+              GROUP BY t.time
+              ORDER BY t.time ASC
+            `;
+          } else if (timeRange === "24h") {
+            chartQuery = `
+              WITH times AS (
+                SELECT toStartOfHour(now64() - INTERVAL number HOUR) as time
                 FROM numbers(24)
               )
               SELECT 
-                h.hour as hour,
-                countIf(t.timestamp IS NOT NULL) as requests
-              FROM hours h
-              LEFT JOIN tunnel_events t ON toStartOfHour(t.timestamp) = h.hour
-                AND t.organization_id = {organizationId:String}
-              GROUP BY h.hour
-              ORDER BY h.hour ASC
-            `,
+                t.time as time,
+                countIf(e.organization_id = {organizationId:String}) as requests
+              FROM times t
+              LEFT JOIN tunnel_events e ON toStartOfHour(e.timestamp) = t.time
+                AND e.organization_id = {organizationId:String}
+              GROUP BY t.time
+              ORDER BY t.time ASC
+            `;
+          } else {
+            // For 7d and 30d, group by day
+            const days = timeRange === "7d" ? 7 : 30;
+            chartQuery = `
+              WITH times AS (
+                SELECT toStartOfDay(now64() - INTERVAL number DAY) as time
+                FROM numbers(${days})
+              )
+              SELECT 
+                t.time as time,
+                countIf(e.organization_id = {organizationId:String}) as requests
+              FROM times t
+              LEFT JOIN tunnel_events e ON toStartOfDay(e.timestamp) = t.time
+                AND e.organization_id = {organizationId:String}
+              GROUP BY t.time
+              ORDER BY t.time ASC
+            `;
+          }
+
+          const chartDataResult = await clickhouse.query({
+            query: chartQuery,
             query_params: { organizationId },
             format: "JSONEachRow",
           });
           const chartData = (await chartDataResult.json()) as Array<{
-            hour: string;
+            time: string;
             requests: string;
           }>;
 
@@ -224,7 +290,7 @@ export const Route = createFileRoute("/api/stats/overview")({
             totalDataTransfer: totalBytes,
             dataTransferChange: Math.round(dataTransferChange),
             chartData: chartData.map((d) => ({
-              hour: d.hour,
+              hour: d.time,
               requests: parseInt(d.requests),
             })),
           });
