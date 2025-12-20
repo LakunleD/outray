@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { auth } from "../../../lib/auth";
 import { db } from "../../../db";
 import { tunnels } from "../../../db/app-schema";
@@ -20,12 +20,24 @@ export const Route = createFileRoute("/api/tunnels/$tunnelId")({
         const [tunnel] = await db
           .select()
           .from(tunnels)
-          .where(
-            and(eq(tunnels.id, tunnelId), eq(tunnels.userId, session.user.id)),
-          );
+          .where(eq(tunnels.id, tunnelId));
 
         if (!tunnel) {
           return json({ error: "Tunnel not found" }, { status: 404 });
+        }
+
+        if (tunnel.organizationId) {
+          const organizations = await auth.api.listOrganizations({
+            headers: request.headers,
+          });
+          const hasAccess = organizations.find(
+            (org) => org.id === tunnel.organizationId,
+          );
+          if (!hasAccess) {
+            return json({ error: "Unauthorized" }, { status: 403 });
+          }
+        } else if (tunnel.userId !== session.user.id) {
+          return json({ error: "Unauthorized" }, { status: 403 });
         }
 
         let subdomain = "";
@@ -68,12 +80,24 @@ export const Route = createFileRoute("/api/tunnels/$tunnelId")({
         const [tunnel] = await db
           .select()
           .from(tunnels)
-          .where(
-            and(eq(tunnels.id, tunnelId), eq(tunnels.userId, session.user.id)),
-          );
+          .where(eq(tunnels.id, tunnelId));
 
         if (!tunnel) {
           return json({ error: "Tunnel not found" }, { status: 404 });
+        }
+
+        if (tunnel.organizationId) {
+          const organizations = await auth.api.listOrganizations({
+            headers: request.headers,
+          });
+          const hasAccess = organizations.find(
+            (org) => org.id === tunnel.organizationId,
+          );
+          if (!hasAccess) {
+            return json({ error: "Unauthorized" }, { status: 403 });
+          }
+        } else if (tunnel.userId !== session.user.id) {
+          return json({ error: "Unauthorized" }, { status: 403 });
         }
 
         // Hard delete the tunnel record (cascade will delete subdomains)
