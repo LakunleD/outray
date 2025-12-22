@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashRouteImport } from './routes/dash'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashIndexRouteImport } from './routes/dash/index'
+import { Route as InternalDomainCheckRouteImport } from './routes/internal/domain-check'
 import { Route as DashSubdomainsRouteImport } from './routes/dash/subdomains'
 import { Route as DashSettingsRouteImport } from './routes/dash/settings'
 import { Route as DashRequestsRouteImport } from './routes/dash/requests'
@@ -40,6 +41,7 @@ import { Route as ApiCliLoginRouteImport } from './routes/api/cli/login'
 import { Route as ApiCliExchangeRouteImport } from './routes/api/cli/exchange'
 import { Route as ApiCliCompleteRouteImport } from './routes/api/cli/complete'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiDomainsDomainIdVerifyRouteImport } from './routes/api/domains/$domainId.verify'
 import { Route as ApiCliLoginStatusRouteImport } from './routes/api/cli/login/status'
 
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -66,6 +68,11 @@ const DashIndexRoute = DashIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashRoute,
+} as any)
+const InternalDomainCheckRoute = InternalDomainCheckRouteImport.update({
+  id: '/internal/domain-check',
+  path: '/internal/domain-check',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DashSubdomainsRoute = DashSubdomainsRouteImport.update({
   id: '/subdomains',
@@ -198,6 +205,12 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDomainsDomainIdVerifyRoute =
+  ApiDomainsDomainIdVerifyRouteImport.update({
+    id: '/verify',
+    path: '/verify',
+    getParentRoute: () => ApiDomainsDomainIdRoute,
+  } as any)
 const ApiCliLoginStatusRoute = ApiCliLoginStatusRouteImport.update({
   id: '/status',
   path: '/status',
@@ -218,12 +231,13 @@ export interface FileRoutesByFullPath {
   '/dash/requests': typeof DashRequestsRoute
   '/dash/settings': typeof DashSettingsRoute
   '/dash/subdomains': typeof DashSubdomainsRoute
+  '/internal/domain-check': typeof InternalDomainCheckRoute
   '/dash/': typeof DashIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cli/complete': typeof ApiCliCompleteRoute
   '/api/cli/exchange': typeof ApiCliExchangeRoute
   '/api/cli/login': typeof ApiCliLoginRouteWithChildren
-  '/api/domains/$domainId': typeof ApiDomainsDomainIdRoute
+  '/api/domains/$domainId': typeof ApiDomainsDomainIdRouteWithChildren
   '/api/me/orgs': typeof ApiMeOrgsRoute
   '/api/stats/overview': typeof ApiStatsOverviewRoute
   '/api/stats/tunnel': typeof ApiStatsTunnelRoute
@@ -237,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/api/tunnels': typeof ApiTunnelsIndexRoute
   '/dash/tunnels': typeof DashTunnelsIndexRoute
   '/api/cli/login/status': typeof ApiCliLoginStatusRoute
+  '/api/domains/$domainId/verify': typeof ApiDomainsDomainIdVerifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -251,12 +266,13 @@ export interface FileRoutesByTo {
   '/dash/requests': typeof DashRequestsRoute
   '/dash/settings': typeof DashSettingsRoute
   '/dash/subdomains': typeof DashSubdomainsRoute
+  '/internal/domain-check': typeof InternalDomainCheckRoute
   '/dash': typeof DashIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cli/complete': typeof ApiCliCompleteRoute
   '/api/cli/exchange': typeof ApiCliExchangeRoute
   '/api/cli/login': typeof ApiCliLoginRouteWithChildren
-  '/api/domains/$domainId': typeof ApiDomainsDomainIdRoute
+  '/api/domains/$domainId': typeof ApiDomainsDomainIdRouteWithChildren
   '/api/me/orgs': typeof ApiMeOrgsRoute
   '/api/stats/overview': typeof ApiStatsOverviewRoute
   '/api/stats/tunnel': typeof ApiStatsTunnelRoute
@@ -270,6 +286,7 @@ export interface FileRoutesByTo {
   '/api/tunnels': typeof ApiTunnelsIndexRoute
   '/dash/tunnels': typeof DashTunnelsIndexRoute
   '/api/cli/login/status': typeof ApiCliLoginStatusRoute
+  '/api/domains/$domainId/verify': typeof ApiDomainsDomainIdVerifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -286,12 +303,13 @@ export interface FileRoutesById {
   '/dash/requests': typeof DashRequestsRoute
   '/dash/settings': typeof DashSettingsRoute
   '/dash/subdomains': typeof DashSubdomainsRoute
+  '/internal/domain-check': typeof InternalDomainCheckRoute
   '/dash/': typeof DashIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cli/complete': typeof ApiCliCompleteRoute
   '/api/cli/exchange': typeof ApiCliExchangeRoute
   '/api/cli/login': typeof ApiCliLoginRouteWithChildren
-  '/api/domains/$domainId': typeof ApiDomainsDomainIdRoute
+  '/api/domains/$domainId': typeof ApiDomainsDomainIdRouteWithChildren
   '/api/me/orgs': typeof ApiMeOrgsRoute
   '/api/stats/overview': typeof ApiStatsOverviewRoute
   '/api/stats/tunnel': typeof ApiStatsTunnelRoute
@@ -305,6 +323,7 @@ export interface FileRoutesById {
   '/api/tunnels/': typeof ApiTunnelsIndexRoute
   '/dash/tunnels/': typeof DashTunnelsIndexRoute
   '/api/cli/login/status': typeof ApiCliLoginStatusRoute
+  '/api/domains/$domainId/verify': typeof ApiDomainsDomainIdVerifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -322,6 +341,7 @@ export interface FileRouteTypes {
     | '/dash/requests'
     | '/dash/settings'
     | '/dash/subdomains'
+    | '/internal/domain-check'
     | '/dash/'
     | '/api/auth/$'
     | '/api/cli/complete'
@@ -341,6 +361,7 @@ export interface FileRouteTypes {
     | '/api/tunnels'
     | '/dash/tunnels'
     | '/api/cli/login/status'
+    | '/api/domains/$domainId/verify'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -355,6 +376,7 @@ export interface FileRouteTypes {
     | '/dash/requests'
     | '/dash/settings'
     | '/dash/subdomains'
+    | '/internal/domain-check'
     | '/dash'
     | '/api/auth/$'
     | '/api/cli/complete'
@@ -374,6 +396,7 @@ export interface FileRouteTypes {
     | '/api/tunnels'
     | '/dash/tunnels'
     | '/api/cli/login/status'
+    | '/api/domains/$domainId/verify'
   id:
     | '__root__'
     | '/'
@@ -389,6 +412,7 @@ export interface FileRouteTypes {
     | '/dash/requests'
     | '/dash/settings'
     | '/dash/subdomains'
+    | '/internal/domain-check'
     | '/dash/'
     | '/api/auth/$'
     | '/api/cli/complete'
@@ -408,6 +432,7 @@ export interface FileRouteTypes {
     | '/api/tunnels/'
     | '/dash/tunnels/'
     | '/api/cli/login/status'
+    | '/api/domains/$domainId/verify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -419,11 +444,12 @@ export interface RootRouteChildren {
   ApiRequestsRoute: typeof ApiRequestsRoute
   ApiSubdomainsRoute: typeof ApiSubdomainsRouteWithChildren
   CliLoginRoute: typeof CliLoginRoute
+  InternalDomainCheckRoute: typeof InternalDomainCheckRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCliCompleteRoute: typeof ApiCliCompleteRoute
   ApiCliExchangeRoute: typeof ApiCliExchangeRoute
   ApiCliLoginRoute: typeof ApiCliLoginRouteWithChildren
-  ApiDomainsDomainIdRoute: typeof ApiDomainsDomainIdRoute
+  ApiDomainsDomainIdRoute: typeof ApiDomainsDomainIdRouteWithChildren
   ApiMeOrgsRoute: typeof ApiMeOrgsRoute
   ApiStatsOverviewRoute: typeof ApiStatsOverviewRoute
   ApiStatsTunnelRoute: typeof ApiStatsTunnelRoute
@@ -471,6 +497,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dash/'
       preLoaderRoute: typeof DashIndexRouteImport
       parentRoute: typeof DashRoute
+    }
+    '/internal/domain-check': {
+      id: '/internal/domain-check'
+      path: '/internal/domain-check'
+      fullPath: '/internal/domain-check'
+      preLoaderRoute: typeof InternalDomainCheckRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/dash/subdomains': {
       id: '/dash/subdomains'
@@ -654,6 +687,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/domains/$domainId/verify': {
+      id: '/api/domains/$domainId/verify'
+      path: '/verify'
+      fullPath: '/api/domains/$domainId/verify'
+      preLoaderRoute: typeof ApiDomainsDomainIdVerifyRouteImport
+      parentRoute: typeof ApiDomainsDomainIdRoute
+    }
     '/api/cli/login/status': {
       id: '/api/cli/login/status'
       path: '/status'
@@ -712,6 +752,17 @@ const ApiCliLoginRouteWithChildren = ApiCliLoginRoute._addFileChildren(
   ApiCliLoginRouteChildren,
 )
 
+interface ApiDomainsDomainIdRouteChildren {
+  ApiDomainsDomainIdVerifyRoute: typeof ApiDomainsDomainIdVerifyRoute
+}
+
+const ApiDomainsDomainIdRouteChildren: ApiDomainsDomainIdRouteChildren = {
+  ApiDomainsDomainIdVerifyRoute: ApiDomainsDomainIdVerifyRoute,
+}
+
+const ApiDomainsDomainIdRouteWithChildren =
+  ApiDomainsDomainIdRoute._addFileChildren(ApiDomainsDomainIdRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashRoute: DashRouteWithChildren,
@@ -721,11 +772,12 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRequestsRoute: ApiRequestsRoute,
   ApiSubdomainsRoute: ApiSubdomainsRouteWithChildren,
   CliLoginRoute: CliLoginRoute,
+  InternalDomainCheckRoute: InternalDomainCheckRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCliCompleteRoute: ApiCliCompleteRoute,
   ApiCliExchangeRoute: ApiCliExchangeRoute,
   ApiCliLoginRoute: ApiCliLoginRouteWithChildren,
-  ApiDomainsDomainIdRoute: ApiDomainsDomainIdRoute,
+  ApiDomainsDomainIdRoute: ApiDomainsDomainIdRouteWithChildren,
   ApiMeOrgsRoute: ApiMeOrgsRoute,
   ApiStatsOverviewRoute: ApiStatsOverviewRoute,
   ApiStatsTunnelRoute: ApiStatsTunnelRoute,
