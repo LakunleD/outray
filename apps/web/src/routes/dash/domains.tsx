@@ -82,7 +82,25 @@ function DomainsView() {
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    createMutation.mutate(newDomain);
+
+    // Validate that it's a subdomain (has at least 3 parts: subdomain.domain.tld)
+    const parts = newDomain.trim().split(".");
+    if (parts.length < 3) {
+      setError(
+        "Only subdomains are allowed. Please enter a subdomain like api.myapp.com",
+      );
+      return;
+    }
+
+    // Basic domain validation
+    const domainRegex =
+      /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)+$/;
+    if (!domainRegex.test(newDomain.trim())) {
+      setError("Please enter a valid domain name");
+      return;
+    }
+
+    createMutation.mutate(newDomain.trim());
   };
 
   const getRecordName = (domain: string) => {
@@ -177,8 +195,9 @@ function DomainsView() {
                   />
                 </div>
                 <p className="mt-2 text-sm text-white/40">
-                  Enter the domain you want to connect. You'll need to configure
-                  DNS records in the next step.
+                  Only subdomains are allowed (e.g., api.myapp.com,
+                  app.example.io). Root domains like myapp.com are not
+                  supported.
                 </p>
               </div>
 

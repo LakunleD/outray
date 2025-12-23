@@ -58,6 +58,28 @@ export const Route = createFileRoute("/api/domains/")({
           );
         }
 
+        // Validate that it's a subdomain (has at least 3 parts: subdomain.domain.tld)
+        const domainParts = domain.trim().split(".");
+        if (domainParts.length < 3) {
+          return json(
+            {
+              error:
+                "Only subdomains are allowed. Please enter a subdomain like api.myapp.com",
+            },
+            { status: 400 },
+          );
+        }
+
+        // Basic domain validation
+        const domainRegex =
+          /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)+$/;
+        if (!domainRegex.test(domain.trim())) {
+          return json(
+            { error: "Please enter a valid domain name" },
+            { status: 400 },
+          );
+        }
+
         const organizations = await auth.api.listOrganizations({
           headers: request.headers,
         });
@@ -72,7 +94,7 @@ export const Route = createFileRoute("/api/domains/")({
 
         // Check if domain already exists
         const existingDomain = await db.query.domains.findFirst({
-          where: eq(domains.domain, domain),
+          where: eq(domains.domain, domain.trim()),
         });
 
         if (existingDomain) {
