@@ -7,14 +7,22 @@ import {
   getPlanLimits,
   calculatePlanCost,
 } from "../../lib/subscription-plans";
+import { initiateCheckout, POLAR_PRODUCT_IDS } from "../../lib/polar";
 import axios from "axios";
+import { authClient } from "../../lib/auth-client";
 
 export const Route = createFileRoute("/dash/billing")({
   component: BillingView,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      success: search.success === "true" || search.success === true,
+    };
+  },
 });
 
 function BillingView() {
   const { selectedOrganizationId } = useAppStore();
+  const { success } = Route.useSearch();
 
   const { data, isLoading } = useQuery({
     queryKey: ["subscription", selectedOrganizationId],
@@ -25,6 +33,14 @@ function BillingView() {
       return response.data;
     },
     enabled: !!selectedOrganizationId,
+  });
+
+  const { data: session } = useQuery({
+    queryKey: ["session"],
+    queryFn: async () => {
+      const { data } = await authClient.getSession();
+      return data;
+    },
   });
 
   const subscription = data?.subscription;
@@ -42,8 +58,55 @@ function BillingView() {
     extraDomains,
   );
 
+  const handleCheckout = async (plan: "ray" | "beam") => {
+    if (!selectedOrganizationId || !session?.user) {
+      alert("Please sign in to upgrade your plan");
+      return;
+    }
+
+    const productId = POLAR_PRODUCT_IDS[plan];
+    if (!productId) {
+      alert("Product ID not configured. Please contact support.");
+      return;
+    }
+
+    try {
+      const checkoutUrl = await initiateCheckout(
+        productId,
+        selectedOrganizationId,
+        session.user.email,
+        session.user.name || session.user.email,
+      );
+
+      window.location.href = checkoutUrl;
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Failed to initiate checkout. Please try again.");
+    }
+  };
+
+  const handleManageSubscription = () => {
+    if (!selectedOrganizationId) return;
+
+    window.location.href = `/api/portal/polar?organizationId=${selectedOrganizationId}`;
+  };
+
   return (
     <div className="max-w-6xl mx-auto">
+      {success && (
+        <div className="mb-6 bg-accent/10 border border-accent/20 rounded-xl p-4 flex items-center gap-3">
+          <Check className="w-5 h-5 text-accent shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-white">
+              Subscription activated successfully!
+            </p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Your plan has been upgraded and is now active.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-2xl font-bold text-white tracking-tight">
@@ -92,6 +155,16 @@ function BillingView() {
                   <p className="text-sm text-gray-500">/month</p>
                 </div>
               </div>
+              {currentPlan !== "free" && (
+                <div className="mt-4">
+                  <button
+                    onClick={handleManageSubscription}
+                    className="text-sm text-accent hover:text-accent/80 font-medium transition-colors"
+                  >
+                    Manage Subscription →
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Usage Stats */}
@@ -171,7 +244,7 @@ function BillingView() {
                     ? `+${extraMembers} members, +${extraDomains} domains`
                     : undefined
                 }
-                onSelect={() => {}}
+                onSelect={() => handleCheckout("ray")}
               />
 
               {/* Beam Plan */}
@@ -197,7 +270,7 @@ function BillingView() {
                     ? `+${extraMembers} members`
                     : undefined
                 }
-                onSelect={() => {}}
+                onSelect={() => handleCheckout("beam")}
               />
             </div>
           </div>
