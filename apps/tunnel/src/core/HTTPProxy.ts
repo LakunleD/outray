@@ -28,11 +28,9 @@ export class HTTPProxy {
     const start = Date.now();
     const host = req.headers.host || "";
 
-    // Use the full hostname (with port removed) as the tunnel ID for consistency
     const cleanHost = host.split(":")[0].toLowerCase();
     const tunnelId = cleanHost;
 
-    // Check if it's the base domain itself (not a tunnel)
     if (tunnelId === this.baseDomain.toLowerCase()) {
       res.writeHead(404, { "Content-Type": "text/plain" });
       res.end("Tunnel not found");
@@ -53,9 +51,43 @@ export class HTTPProxy {
         }
       });
 
+      const metadata = this.router.getTunnelMetadata(tunnelId);
+      const redis = this.router.getRedis();
+      const bandwidthKey =
+        metadata?.organizationId && redis
+          ? this.getBandwidthKey(metadata.organizationId)
+          : null;
+      const bandwidthLimit = metadata?.bandwidthLimit;
+      const shouldEnforce =
+        bandwidthKey && bandwidthLimit !== undefined && bandwidthLimit !== -1;
+
+      // Check initial limit
+      if (shouldEnforce && redis) {
+        const currentUsage = await redis.get(bandwidthKey!);
+        if (currentUsage && parseInt(currentUsage) >= bandwidthLimit!) {
+          res.writeHead(402, { "Content-Type": "text/plain" });
+          res.end("Bandwidth limit exceeded");
+          return;
+        }
+      }
+
       const chunks: Buffer[] = [];
       for await (const chunk of req) {
-        chunks.push(Buffer.from(chunk));
+        const bufferChunk = Buffer.from(chunk);
+
+        if (shouldEnforce && redis) {
+          const newUsage = await redis.incrby(
+            bandwidthKey!,
+            bufferChunk.length,
+          );
+          if (newUsage > bandwidthLimit!) {
+            res.writeHead(402, { "Content-Type": "text/plain" });
+            res.end("Bandwidth limit exceeded");
+            return;
+          }
+        }
+
+        chunks.push(bufferChunk);
       }
       const bodyBuffer = Buffer.concat(chunks);
       const bodyBase64 =
@@ -69,18 +101,30 @@ export class HTTPProxy {
         bodyBase64,
       );
 
-      res.writeHead(response.statusCode, response.headers);
-
       let responseSize = 0;
+      let responseBuffer: Buffer | undefined;
+
       if (response.body) {
-        const responseBuffer = Buffer.from(response.body, "base64");
+        responseBuffer = Buffer.from(response.body, "base64");
         responseSize = responseBuffer.length;
+
+        if (shouldEnforce && redis) {
+          const newUsage = await redis.incrby(bandwidthKey!, responseSize);
+          if (newUsage > bandwidthLimit!) {
+            res.writeHead(402, { "Content-Type": "text/plain" });
+            res.end("Bandwidth limit exceeded");
+            return;
+          }
+        }
+      }
+
+      res.writeHead(response.statusCode, response.headers);
+      if (responseBuffer) {
         res.end(responseBuffer);
       } else {
         res.end();
       }
 
-      const metadata = this.router.getTunnelMetadata(tunnelId);
       if (metadata?.organizationId) {
         const event = {
           timestamp: Date.now(),
@@ -160,5 +204,12 @@ export class HTTPProxy {
       console.error("Failed to load offline page template", error);
       return `<h1>${tunnelId} is offline</h1>`;
     }
+  }
+
+  private getBandwidthKey(organizationId: string): string {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `bw:${organizationId}:${year}-${month}`;
   }
 }
