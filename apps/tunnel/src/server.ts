@@ -12,8 +12,16 @@ const redis = new Redis(config.redisUrl, {
   lazyConnect: true,
 });
 
+const subRedis = new Redis(config.redisUrl, {
+  lazyConnect: true,
+});
+
 redis.on("error", (error) => {
   console.error("Redis connection error", error);
+});
+
+subRedis.on("error", (error) => {
+  console.error("Redis subscription connection error", error);
 });
 
 void redis
@@ -26,8 +34,13 @@ void redis
     process.exit(1);
   });
 
+void subRedis.connect().catch((error) => {
+  console.error("Failed to connect to Redis (subscriber)", error);
+});
+
 const router = new TunnelRouter({
   redis,
+  subRedis,
   ttlSeconds: config.redisTunnelTtlSeconds,
   heartbeatIntervalMs: config.redisHeartbeatIntervalMs,
   requestTimeoutMs: config.requestTimeoutMs,
