@@ -5,9 +5,9 @@ import { useState } from "react";
 
 export const Route = createFileRoute("/login")({
   component: RouteComponent,
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search?: Record<string, unknown>): { redirect?: string } => {
     return {
-      redirect: search.redirect as string | undefined,
+      redirect: (search?.redirect as string) || undefined,
     };
   },
 });
