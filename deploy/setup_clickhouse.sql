@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS tunnel_events
     `timestamp` DateTime64(3) DEFAULT now64(),
     `tunnel_id` String,
     `organization_id` String,
+    `retention_days` UInt16 DEFAULT 3,
     `host` String,
     `method` LowCardinality(String),
     `path` String,
@@ -16,13 +17,14 @@ CREATE TABLE IF NOT EXISTS tunnel_events
 ENGINE = MergeTree
 PARTITION BY toDate(timestamp)
 ORDER BY (tunnel_id, timestamp)
-TTL timestamp + toIntervalDay(7)
+TTL timestamp + toIntervalDay(retention_days)
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS tunnel_stats_1m
 (
     `minute` DateTime,
     `tunnel_id` String,
+    `retention_days` UInt16 DEFAULT 3,
     `requests` UInt32,
     `errors` UInt32,
     `avg_latency_ms` Float32,
@@ -33,13 +35,14 @@ CREATE TABLE IF NOT EXISTS tunnel_stats_1m
 ENGINE = SummingMergeTree
 PARTITION BY toDate(minute)
 ORDER BY (tunnel_id, minute)
-TTL minute + toIntervalDay(30)
+TTL minute + toIntervalDay(retention_days)
 SETTINGS index_granularity = 8192;
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS tunnel_events_to_stats_1m TO tunnel_stats_1m
 AS SELECT
     toStartOfMinute(timestamp) AS minute,
     tunnel_id,
+    any(retention_days) as retention_days,
     count() AS requests,
     countIf(status_code >= 400) AS errors,
     CAST(avg(request_duration_ms), 'Float32') AS avg_latency_ms,
