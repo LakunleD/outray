@@ -65,8 +65,8 @@ export class HTTPProxy {
       if (shouldEnforce && redis) {
         const currentUsage = await redis.get(bandwidthKey!);
         if (currentUsage && parseInt(currentUsage) >= bandwidthLimit!) {
-          res.writeHead(402, { "Content-Type": "text/plain" });
-          res.end("Bandwidth limit exceeded");
+          res.writeHead(402, { "Content-Type": "text/html" });
+          res.end(this.getBandwidthExceededHtml(tunnelId));
           return;
         }
       }
@@ -81,8 +81,8 @@ export class HTTPProxy {
             bufferChunk.length,
           );
           if (newUsage > bandwidthLimit!) {
-            res.writeHead(402, { "Content-Type": "text/plain" });
-            res.end("Bandwidth limit exceeded");
+            res.writeHead(402, { "Content-Type": "text/html" });
+            res.end(this.getBandwidthExceededHtml(tunnelId));
             return;
           }
         }
@@ -111,8 +111,8 @@ export class HTTPProxy {
         if (shouldEnforce && redis) {
           const newUsage = await redis.incrby(bandwidthKey!, responseSize);
           if (newUsage > bandwidthLimit!) {
-            res.writeHead(402, { "Content-Type": "text/plain" });
-            res.end("Bandwidth limit exceeded");
+            res.writeHead(402, { "Content-Type": "text/html" });
+            res.end(this.getBandwidthExceededHtml(tunnelId));
             return;
           }
         }
@@ -203,6 +203,33 @@ export class HTTPProxy {
     } catch (error) {
       console.error("Failed to load offline page template", error);
       return `<h1>${tunnelId} is offline</h1>`;
+    }
+  }
+
+  private getBandwidthExceededHtml(tunnelId: string): string {
+    try {
+      const paths = [
+        path.join(__dirname, "../bandwidth_exceeded.html"),
+        path.join(__dirname, "bandwidth_exceeded.html"),
+        path.join(process.cwd(), "src/bandwidth_exceeded.html"),
+      ];
+
+      let template = "";
+      for (const p of paths) {
+        if (fs.existsSync(p)) {
+          template = fs.readFileSync(p, "utf-8");
+          break;
+        }
+      }
+
+      if (!template) {
+        return `<h1>Bandwidth Limit Exceeded for ${tunnelId}</h1>`;
+      }
+
+      return template.replace(/{{TUNNEL_ID}}/g, tunnelId);
+    } catch (error) {
+      console.error("Failed to load bandwidth exceeded page template", error);
+      return `<h1>Bandwidth Limit Exceeded for ${tunnelId}</h1>`;
     }
   }
 }
