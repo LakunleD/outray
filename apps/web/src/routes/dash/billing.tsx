@@ -45,20 +45,10 @@ function BillingView() {
 
   const subscription = data?.subscription;
   const currentPlan = subscription?.plan || "free";
-  const extraMembers = subscription?.extraMembers || 0;
-  const extraDomains = subscription?.extraDomains || 0;
-  const planLimits = getPlanLimits(
-    currentPlan as any,
-    extraMembers,
-    extraDomains,
-  );
-  const monthlyCost = calculatePlanCost(
-    currentPlan as any,
-    extraMembers,
-    extraDomains,
-  );
+  const planLimits = getPlanLimits(currentPlan as any);
+  const monthlyCost = calculatePlanCost(currentPlan as any);
 
-  const handleCheckout = async (plan: "ray" | "beam") => {
+  const handleCheckout = async (plan: "ray" | "beam" | "pulse") => {
     if (!selectedOrganizationId || !session?.user) {
       alert("Please sign in to upgrade your plan");
       return;
@@ -124,7 +114,6 @@ function BillingView() {
         </div>
       ) : (
         <>
-          {/* Current Plan Overview */}
           <div className="bg-white/2 border border-white/5 rounded-2xl overflow-hidden mb-8">
             <div className="p-6 border-b border-white/5">
               <div className="flex items-center justify-between">
@@ -167,7 +156,6 @@ function BillingView() {
               )}
             </div>
 
-            {/* Usage Stats */}
             <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p className="text-xs text-gray-500 mb-1">Tunnels</p>
@@ -197,13 +185,11 @@ function BillingView() {
             </div>
           </div>
 
-          {/* Available Plans */}
           <div>
             <h3 className="text-xl font-bold text-white mb-6">
               Available Plans
             </h3>
-            <div className="grid gap-6 md:grid-cols-3">
-              {/* Free Plan */}
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
               <PlanCard
                 name="Free"
                 price={0}
@@ -221,7 +207,6 @@ function BillingView() {
                 onSelect={() => {}}
               />
 
-              {/* Ray Plan */}
               <PlanCard
                 name="Ray"
                 price={7}
@@ -230,24 +215,17 @@ function BillingView() {
                 features={[
                   "3 Active Tunnels",
                   "5 Subdomains",
-                  "3 Team Members (+$2/member, cap 5)",
-                  "1 Custom Domain (+$2/domain, cap 3)",
+                  "3 Team Members",
+                  "1 Custom Domain",
                   "10GB Bandwidth",
                   "100K Requests/month",
                   "14 Days Retention",
                   "API Access",
                 ]}
                 current={currentPlan === "ray"}
-                recommended
-                extraInfo={
-                  currentPlan === "ray"
-                    ? `+${extraMembers} members, +${extraDomains} domains`
-                    : undefined
-                }
                 onSelect={() => handleCheckout("ray")}
               />
 
-              {/* Beam Plan */}
               <PlanCard
                 name="Beam"
                 price={15}
@@ -256,7 +234,7 @@ function BillingView() {
                 features={[
                   "10 Active Tunnels",
                   "10 Subdomains",
-                  "5 Team Members (+$3/extra)",
+                  "5 Team Members",
                   "Unlimited Custom Domains",
                   "50GB Bandwidth",
                   "1M Requests/month",
@@ -265,12 +243,28 @@ function BillingView() {
                   "Priority Support",
                 ]}
                 current={currentPlan === "beam"}
-                extraInfo={
-                  currentPlan === "beam" && extraMembers > 0
-                    ? `+${extraMembers} members`
-                    : undefined
-                }
+                recommended
                 onSelect={() => handleCheckout("beam")}
+              />
+
+              <PlanCard
+                name="Pulse"
+                price={120}
+                icon={<Zap className="w-6 h-6 text-purple-400" />}
+                description="For high-scale production"
+                features={[
+                  "50 Active Tunnels",
+                  "50 Subdomains",
+                  "Unlimited Team Members",
+                  "Unlimited Custom Domains",
+                  "1TB Bandwidth",
+                  "10M Requests/month",
+                  "90 Days Retention",
+                  "API Access",
+                  "Priority Support",
+                ]}
+                current={currentPlan === "pulse"}
+                onSelect={() => handleCheckout("pulse")}
               />
             </div>
           </div>
