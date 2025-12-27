@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Globe, Copy, ExternalLink, Power } from "lucide-react";
 import { useState } from "react";
 import { ConfirmModal } from "../confirm-modal";
+import { useAppStore } from "../../lib/store";
 
 interface TunnelHeaderProps {
   tunnel: {
@@ -35,11 +36,14 @@ export function TunnelHeader({
     confirmText: "",
   });
 
+  const { selectedOrganization } = useAppStore();
+
   return (
     <>
       <div className="flex items-center gap-4">
         <Link
-          to="/dash/tunnels"
+          to="/$orgSlug/tunnels"
+          params={{ orgSlug: selectedOrganization?.slug! }}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
         >
           <ArrowLeft size={20} />

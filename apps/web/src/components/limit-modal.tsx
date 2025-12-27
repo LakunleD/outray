@@ -1,6 +1,7 @@
 import { X, AlertTriangle } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Link } from "@tanstack/react-router";
+import { useAppStore } from "../lib/store";
 
 interface LimitModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export function LimitModal({
   currentPlan,
   resourceName,
 }: LimitModalProps) {
+  const { selectedOrganization } = useAppStore();
   return (
     <AnimatePresence>
       {isOpen && (
@@ -89,8 +91,9 @@ export function LimitModal({
                       Cancel
                     </button>
                     <Link
-                      to="/dash/billing"
+                      to="/$orgSlug/billing"
                       search={{ success: false }}
+                      params={{ orgSlug: selectedOrganization?.slug! }}
                       className="flex-1 px-4 py-2.5 rounded-xl bg-white text-black text-sm font-medium hover:bg-gray-100 transition-colors text-center"
                     >
                       Upgrade Plan
