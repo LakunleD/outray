@@ -25,6 +25,7 @@ import {
 } from "recharts";
 import { useState } from "react";
 import { BandwidthUsage } from "../../components/sidebar/bandwidth-usage";
+import { NewTunnelModal } from "../../components/new-tunnel-modal";
 
 export const Route = createFileRoute("/dash/")({
   component: OverviewView,
@@ -51,6 +52,7 @@ function formatBytes(bytes: number): string {
 }
 
 function OverviewView() {
+  const [isNewTunnelModalOpen, setIsNewTunnelModalOpen] = useState(false);
   const [timeRange, setTimeRange] = useState("24h");
   const { selectedOrganizationId } = useAppStore();
   const activeOrganization = selectedOrganizationId;
@@ -140,7 +142,10 @@ function OverviewView() {
             Welcome back, here's what's happening.
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-200 text-black rounded-xl transition-colors font-medium shadow-lg shadow-white/5">
+        <button
+          onClick={() => setIsNewTunnelModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-200 text-black rounded-xl transition-colors font-medium shadow-lg shadow-white/5"
+        >
           <Plus size={18} />
           New Tunnel
         </button>
@@ -369,6 +374,11 @@ function OverviewView() {
           </div>
         </div>
       </div>
+
+      <NewTunnelModal
+        isOpen={isNewTunnelModalOpen}
+        onClose={() => setIsNewTunnelModalOpen(false)}
+      />
     </div>
   );
 }
