@@ -98,28 +98,28 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       title: "Platform",
       items: [
         {
-          to: "/dash",
+          to: "/$orgSlug",
           label: "Overview",
           icon: <LayoutDashboard size={NAV_ICON_SIZE} />,
           activeOptions: { exact: true },
         },
         {
-          to: "/dash/tunnels",
+          to: "/$orgSlug/tunnels",
           label: "Active Tunnels",
           icon: <Network size={NAV_ICON_SIZE} />,
         },
         {
-          to: "/dash/requests",
+          to: "/$orgSlug/requests",
           label: "Requests",
           icon: <History size={NAV_ICON_SIZE} />,
         },
         {
-          to: "/dash/subdomains",
+          to: "/$orgSlug/subdomains",
           label: "Subdomains",
           icon: <Globe size={NAV_ICON_SIZE} />,
         },
         {
-          to: "/dash/domains",
+          to: "/$orgSlug/domains",
           label: "Domains",
           icon: <Link2 size={NAV_ICON_SIZE} />,
         },
@@ -129,12 +129,12 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       title: "Organization",
       items: [
         {
-          to: "/dash/billing",
+          to: "/$orgSlug/billing",
           label: "Billing",
           icon: <CreditCard size={NAV_ICON_SIZE} />,
         },
         {
-          to: "/dash/members",
+          to: "/$orgSlug/members",
           label: "Members",
           icon: <Users size={NAV_ICON_SIZE} />,
         },
@@ -144,7 +144,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       title: "Configuration",
       items: [
         {
-          to: "/dash/settings",
+          to: "/$orgSlug/settings",
           label: "Settings",
           icon: <Settings size={NAV_ICON_SIZE} />,
         },
