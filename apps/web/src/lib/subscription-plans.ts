@@ -34,7 +34,7 @@ export const SUBSCRIPTION_PLANS = {
     price: 15,
     polarProductId: process.env.POLAR_BEAM_PRODUCT_ID,
     features: {
-      maxTunnels: 10,
+      maxTunnels: 5,
       maxDomains: 10,
       maxSubdomains: 20,
       maxMembers: 5,
@@ -49,9 +49,9 @@ export const SUBSCRIPTION_PLANS = {
     price: 120,
     polarProductId: process.env.POLAR_PULSE_PRODUCT_ID,
     features: {
-      maxTunnels: 50,
-      maxDomains: -1, // Unlimited
-      maxSubdomains: 50,
+      maxTunnels: 20,
+      maxDomains: 25,
+      maxSubdomains: 200,
       maxMembers: -1, // Unlimited
       bandwidthPerMonth: 1024 * 1024 * 1024 * 1024, // 1TB
       retentionDays: 90,
