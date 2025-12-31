@@ -235,7 +235,7 @@ async function handleStartFromConfig(
   serverUrl: string,
   configPath?: string,
 ) {
-  const defaultConfigPath = path.join(process.cwd(), "config.toml");
+  const defaultConfigPath = path.join(process.cwd(), "outray", "config.toml");
   const tomlConfigPath = configPath || defaultConfigPath;
 
   let parsedConfig;
@@ -261,7 +261,6 @@ async function handleStartFromConfig(
   > = [];
 
   for (const tunnel of parsedConfig.tunnels) {
-    const tunnelServerUrl = tunnel.serverUrl || serverUrl;
     let apiKey: string | undefined;
 
     if (tunnel.org && authConfig.authType === "user" && authConfig.userToken) {
@@ -307,7 +306,7 @@ async function handleStartFromConfig(
     if (tunnel.protocol === "tcp") {
       client = new TCPTunnelClient(
         tunnel.localPort,
-        tunnelServerUrl,
+        serverUrl,
         apiKey,
         tunnel.localHost,
         tunnel.remotePort,
@@ -315,7 +314,7 @@ async function handleStartFromConfig(
     } else if (tunnel.protocol === "udp") {
       client = new UDPTunnelClient(
         tunnel.localPort,
-        tunnelServerUrl,
+        serverUrl,
         apiKey,
         tunnel.localHost,
         tunnel.remotePort,
@@ -323,7 +322,7 @@ async function handleStartFromConfig(
     } else {
       client = new OutRayClient(
         tunnel.localPort,
-        tunnelServerUrl,
+        serverUrl,
         apiKey,
         tunnel.subdomain,
         tunnel.customDomain,

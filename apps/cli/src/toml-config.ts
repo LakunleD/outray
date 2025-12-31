@@ -17,7 +17,6 @@ export interface TunnelConfig {
 
 export interface GlobalConfig {
   org?: string;
-  server_url?: string;
 }
 
 export interface OutRayTomlConfig {
@@ -34,14 +33,12 @@ export interface ParsedTunnelConfig {
   customDomain?: string;
   remotePort?: number;
   org?: string;
-  serverUrl?: string;
 }
 
 const portSchema = Joi.number().integer().min(1).max(65535).required();
 
 const globalConfigSchema = Joi.object({
   org: Joi.string().optional(),
-  server_url: Joi.string().uri().optional(),
 });
 
 const tunnelConfigSchema = Joi.object({
@@ -192,7 +189,6 @@ export class TomlConfigParser {
         customDomain: tunnel.custom_domain,
         remotePort: tunnel.remote_port,
         org: tunnel.org || globalConfig?.org,
-        serverUrl: globalConfig?.server_url,
       });
     }
 

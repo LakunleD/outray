@@ -1,6 +1,5 @@
 [global]
 org = "my-team"
-server_url = "wss://api.outray.dev/"
 
 [tunnel.web]
 protocol = "http"
