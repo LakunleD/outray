@@ -88,12 +88,15 @@ export const Route = createFileRoute("/api/$orgSlug/stats/overview")({
             (await recentRequestsResult.json()) as Array<{ total: string }>;
           const recentRequests = parseInt(recentRequestsData[0]?.total || "0");
 
-          const requestsChange =
+          const requestsChangeRaw =
             requestsYesterday > 0
               ? ((recentRequests - requestsYesterday) / requestsYesterday) * 100
               : recentRequests > 0
                 ? 100
                 : 0;
+          const requestsChange = Number.isFinite(requestsChangeRaw)
+            ? Math.round(requestsChangeRaw * 100) / 100
+            : 0;
 
           const dataTransferResult = await clickhouse.query({
             query: `
@@ -138,12 +141,15 @@ export const Route = createFileRoute("/api/$orgSlug/stats/overview")({
           }>;
           const bytesRecent = Number(dataRecentData[0]?.total || 0);
 
-          const dataTransferChange =
+          const dataTransferChangeRaw =
             bytesYesterday > 0
               ? ((bytesRecent - bytesYesterday) / bytesYesterday) * 100
               : bytesRecent > 0
                 ? 100
                 : 0;
+          const dataTransferChange = Number.isFinite(dataTransferChangeRaw)
+            ? Math.round(dataTransferChangeRaw * 100) / 100
+            : 0;
 
           const activeTunnelsCount = await redis.scard(
             `org:${organizationId}:online_tunnels`,

@@ -4,7 +4,7 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import axios from "axios";
 import { appClient } from "@/lib/app-client";
 import { getPlanLimits } from "@/lib/subscription-plans";
-import { BandwidthUsage } from "@/components/sidebar/bandwidth-usage";
+import { BandwidthUsage } from "@/components/overview/bandwidth-usage";
 import { NewTunnelModal } from "@/components/new-tunnel-modal";
 import { LimitModal } from "@/components/limit-modal";
 import { OverviewHeader } from "@/components/overview/overview-header";

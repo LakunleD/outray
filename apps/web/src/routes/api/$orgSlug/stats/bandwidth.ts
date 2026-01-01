@@ -1,12 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
-
-import { db } from "../../../../db";
-import { subscriptions } from "../../../../db/subscription-schema";
-import { redis } from "../../../../lib/redis";
-import { SUBSCRIPTION_PLANS } from "../../../../lib/subscription-plans";
-import { requireOrgFromSlug } from "../../../../lib/org";
+import { db } from "@/db";
+import { subscriptions } from "@/db/subscription-schema";
+import { redis } from "@/lib/redis";
+import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
+import { requireOrgFromSlug } from "@/lib/org";
 import { getBandwidthKey } from "../../../../../../../shared/utils";
 
 export const Route = createFileRoute("/api/$orgSlug/stats/bandwidth")({

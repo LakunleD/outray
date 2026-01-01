@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAppStore } from "@/lib/store";
 import { appClient } from "@/lib/app-client";
+import { useParams } from "@tanstack/react-router";
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -11,16 +11,15 @@ function formatBytes(bytes: number): string {
 }
 
 export function BandwidthUsage() {
-  const { selectedOrganization } = useAppStore();
-  const selectedOrganizationId = selectedOrganization?.id;
+  const { orgSlug } = useParams({ from: "/$orgSlug" });
 
   const { data, isLoading } = useQuery({
-    queryKey: ["bandwidth", selectedOrganizationId],
+    queryKey: ["bandwidth", orgSlug],
     queryFn: async () => {
-      if (!selectedOrganizationId) return null;
-      return await appClient.stats.bandwidth(selectedOrganizationId);
+      if (!orgSlug) return null;
+      return await appClient.stats.bandwidth(orgSlug);
     },
-    enabled: !!selectedOrganizationId,
+    enabled: !!orgSlug,
   });
 
   if (isLoading || !data) {
