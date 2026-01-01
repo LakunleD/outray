@@ -39,6 +39,7 @@ import { Route as ApiTunnelAuthRouteImport } from './routes/api/tunnel/auth'
 import { Route as ApiSubscriptionsOrganizationIdRouteImport } from './routes/api/subscriptions/$organizationId'
 import { Route as ApiOrganizationsCheckSlugRouteImport } from './routes/api/organizations/check-slug'
 import { Route as ApiMeOrgsRouteImport } from './routes/api/me/orgs'
+import { Route as ApiDomainVerifyOwnershipRouteImport } from './routes/api/domain/verify-ownership'
 import { Route as ApiCliLoginRouteImport } from './routes/api/cli/login'
 import { Route as ApiCliExchangeRouteImport } from './routes/api/cli/exchange'
 import { Route as ApiCliCompleteRouteImport } from './routes/api/cli/complete'
@@ -64,7 +65,6 @@ import { Route as ApiOrgSlugStatsOverviewRouteImport } from './routes/api/$orgSl
 import { Route as ApiOrgSlugStatsBandwidthRouteImport } from './routes/api/$orgSlug/stats/bandwidth'
 import { Route as ApiOrgSlugPortalPolarRouteImport } from './routes/api/$orgSlug/portal/polar'
 import { Route as ApiOrgSlugDomainsDomainIdRouteImport } from './routes/api/$orgSlug/domains/$domainId'
-import { Route as ApiOrgSlugDomainVerifyOwnershipRouteImport } from './routes/api/$orgSlug/domain/verify-ownership'
 import { Route as ApiOrgSlugTunnelsTunnelIdStopRouteImport } from './routes/api/$orgSlug/tunnels/$tunnelId.stop'
 import { Route as ApiOrgSlugDomainsDomainIdVerifyRouteImport } from './routes/api/$orgSlug/domains/$domainId.verify'
 
@@ -220,6 +220,12 @@ const ApiMeOrgsRoute = ApiMeOrgsRouteImport.update({
   path: '/api/me/orgs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDomainVerifyOwnershipRoute =
+  ApiDomainVerifyOwnershipRouteImport.update({
+    id: '/api/domain/verify-ownership',
+    path: '/api/domain/verify-ownership',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiCliLoginRoute = ApiCliLoginRouteImport.update({
   id: '/api/cli/login',
   path: '/api/cli/login',
@@ -351,12 +357,6 @@ const ApiOrgSlugDomainsDomainIdRoute =
     path: '/api/$orgSlug/domains/$domainId',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiOrgSlugDomainVerifyOwnershipRoute =
-  ApiOrgSlugDomainVerifyOwnershipRouteImport.update({
-    id: '/api/$orgSlug/domain/verify-ownership',
-    path: '/api/$orgSlug/domain/verify-ownership',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiOrgSlugTunnelsTunnelIdStopRoute =
   ApiOrgSlugTunnelsTunnelIdStopRouteImport.update({
     id: '/stop',
@@ -405,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/api/cli/complete': typeof ApiCliCompleteRoute
   '/api/cli/exchange': typeof ApiCliExchangeRoute
   '/api/cli/login': typeof ApiCliLoginRouteWithChildren
+  '/api/domain/verify-ownership': typeof ApiDomainVerifyOwnershipRoute
   '/api/me/orgs': typeof ApiMeOrgsRoute
   '/api/organizations/check-slug': typeof ApiOrganizationsCheckSlugRoute
   '/api/subscriptions/$organizationId': typeof ApiSubscriptionsOrganizationIdRoute
@@ -414,7 +415,6 @@ export interface FileRoutesByFullPath {
   '/api/webhooks/polar': typeof ApiWebhooksPolarRoute
   '/$orgSlug/settings/': typeof OrgSlugSettingsIndexRoute
   '/$orgSlug/tunnels': typeof OrgSlugTunnelsIndexRoute
-  '/api/$orgSlug/domain/verify-ownership': typeof ApiOrgSlugDomainVerifyOwnershipRoute
   '/api/$orgSlug/domains/$domainId': typeof ApiOrgSlugDomainsDomainIdRouteWithChildren
   '/api/$orgSlug/portal/polar': typeof ApiOrgSlugPortalPolarRoute
   '/api/$orgSlug/stats/bandwidth': typeof ApiOrgSlugStatsBandwidthRoute
@@ -463,6 +463,7 @@ export interface FileRoutesByTo {
   '/api/cli/complete': typeof ApiCliCompleteRoute
   '/api/cli/exchange': typeof ApiCliExchangeRoute
   '/api/cli/login': typeof ApiCliLoginRouteWithChildren
+  '/api/domain/verify-ownership': typeof ApiDomainVerifyOwnershipRoute
   '/api/me/orgs': typeof ApiMeOrgsRoute
   '/api/organizations/check-slug': typeof ApiOrganizationsCheckSlugRoute
   '/api/subscriptions/$organizationId': typeof ApiSubscriptionsOrganizationIdRoute
@@ -472,7 +473,6 @@ export interface FileRoutesByTo {
   '/api/webhooks/polar': typeof ApiWebhooksPolarRoute
   '/$orgSlug/settings': typeof OrgSlugSettingsIndexRoute
   '/$orgSlug/tunnels': typeof OrgSlugTunnelsIndexRoute
-  '/api/$orgSlug/domain/verify-ownership': typeof ApiOrgSlugDomainVerifyOwnershipRoute
   '/api/$orgSlug/domains/$domainId': typeof ApiOrgSlugDomainsDomainIdRouteWithChildren
   '/api/$orgSlug/portal/polar': typeof ApiOrgSlugPortalPolarRoute
   '/api/$orgSlug/stats/bandwidth': typeof ApiOrgSlugStatsBandwidthRoute
@@ -524,6 +524,7 @@ export interface FileRoutesById {
   '/api/cli/complete': typeof ApiCliCompleteRoute
   '/api/cli/exchange': typeof ApiCliExchangeRoute
   '/api/cli/login': typeof ApiCliLoginRouteWithChildren
+  '/api/domain/verify-ownership': typeof ApiDomainVerifyOwnershipRoute
   '/api/me/orgs': typeof ApiMeOrgsRoute
   '/api/organizations/check-slug': typeof ApiOrganizationsCheckSlugRoute
   '/api/subscriptions/$organizationId': typeof ApiSubscriptionsOrganizationIdRoute
@@ -533,7 +534,6 @@ export interface FileRoutesById {
   '/api/webhooks/polar': typeof ApiWebhooksPolarRoute
   '/$orgSlug/settings/': typeof OrgSlugSettingsIndexRoute
   '/$orgSlug/tunnels/': typeof OrgSlugTunnelsIndexRoute
-  '/api/$orgSlug/domain/verify-ownership': typeof ApiOrgSlugDomainVerifyOwnershipRoute
   '/api/$orgSlug/domains/$domainId': typeof ApiOrgSlugDomainsDomainIdRouteWithChildren
   '/api/$orgSlug/portal/polar': typeof ApiOrgSlugPortalPolarRoute
   '/api/$orgSlug/stats/bandwidth': typeof ApiOrgSlugStatsBandwidthRoute
@@ -586,6 +586,7 @@ export interface FileRouteTypes {
     | '/api/cli/complete'
     | '/api/cli/exchange'
     | '/api/cli/login'
+    | '/api/domain/verify-ownership'
     | '/api/me/orgs'
     | '/api/organizations/check-slug'
     | '/api/subscriptions/$organizationId'
@@ -595,7 +596,6 @@ export interface FileRouteTypes {
     | '/api/webhooks/polar'
     | '/$orgSlug/settings/'
     | '/$orgSlug/tunnels'
-    | '/api/$orgSlug/domain/verify-ownership'
     | '/api/$orgSlug/domains/$domainId'
     | '/api/$orgSlug/portal/polar'
     | '/api/$orgSlug/stats/bandwidth'
@@ -644,6 +644,7 @@ export interface FileRouteTypes {
     | '/api/cli/complete'
     | '/api/cli/exchange'
     | '/api/cli/login'
+    | '/api/domain/verify-ownership'
     | '/api/me/orgs'
     | '/api/organizations/check-slug'
     | '/api/subscriptions/$organizationId'
@@ -653,7 +654,6 @@ export interface FileRouteTypes {
     | '/api/webhooks/polar'
     | '/$orgSlug/settings'
     | '/$orgSlug/tunnels'
-    | '/api/$orgSlug/domain/verify-ownership'
     | '/api/$orgSlug/domains/$domainId'
     | '/api/$orgSlug/portal/polar'
     | '/api/$orgSlug/stats/bandwidth'
@@ -704,6 +704,7 @@ export interface FileRouteTypes {
     | '/api/cli/complete'
     | '/api/cli/exchange'
     | '/api/cli/login'
+    | '/api/domain/verify-ownership'
     | '/api/me/orgs'
     | '/api/organizations/check-slug'
     | '/api/subscriptions/$organizationId'
@@ -713,7 +714,6 @@ export interface FileRouteTypes {
     | '/api/webhooks/polar'
     | '/$orgSlug/settings/'
     | '/$orgSlug/tunnels/'
-    | '/api/$orgSlug/domain/verify-ownership'
     | '/api/$orgSlug/domains/$domainId'
     | '/api/$orgSlug/portal/polar'
     | '/api/$orgSlug/stats/bandwidth'
@@ -753,6 +753,7 @@ export interface RootRouteChildren {
   ApiCliCompleteRoute: typeof ApiCliCompleteRoute
   ApiCliExchangeRoute: typeof ApiCliExchangeRoute
   ApiCliLoginRoute: typeof ApiCliLoginRouteWithChildren
+  ApiDomainVerifyOwnershipRoute: typeof ApiDomainVerifyOwnershipRoute
   ApiMeOrgsRoute: typeof ApiMeOrgsRoute
   ApiOrganizationsCheckSlugRoute: typeof ApiOrganizationsCheckSlugRoute
   ApiSubscriptionsOrganizationIdRoute: typeof ApiSubscriptionsOrganizationIdRoute
@@ -760,7 +761,6 @@ export interface RootRouteChildren {
   ApiTunnelCheckSubdomainRoute: typeof ApiTunnelCheckSubdomainRoute
   ApiTunnelRegisterRoute: typeof ApiTunnelRegisterRoute
   ApiWebhooksPolarRoute: typeof ApiWebhooksPolarRoute
-  ApiOrgSlugDomainVerifyOwnershipRoute: typeof ApiOrgSlugDomainVerifyOwnershipRoute
   ApiOrgSlugDomainsDomainIdRoute: typeof ApiOrgSlugDomainsDomainIdRouteWithChildren
   ApiOrgSlugPortalPolarRoute: typeof ApiOrgSlugPortalPolarRoute
   ApiOrgSlugStatsBandwidthRoute: typeof ApiOrgSlugStatsBandwidthRoute
@@ -986,6 +986,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMeOrgsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/domain/verify-ownership': {
+      id: '/api/domain/verify-ownership'
+      path: '/api/domain/verify-ownership'
+      fullPath: '/api/domain/verify-ownership'
+      preLoaderRoute: typeof ApiDomainVerifyOwnershipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/cli/login': {
       id: '/api/cli/login'
       path: '/api/cli/login'
@@ -1161,13 +1168,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiOrgSlugDomainsDomainIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/$orgSlug/domain/verify-ownership': {
-      id: '/api/$orgSlug/domain/verify-ownership'
-      path: '/api/$orgSlug/domain/verify-ownership'
-      fullPath: '/api/$orgSlug/domain/verify-ownership'
-      preLoaderRoute: typeof ApiOrgSlugDomainVerifyOwnershipRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/$orgSlug/tunnels/$tunnelId/stop': {
       id: '/api/$orgSlug/tunnels/$tunnelId/stop'
       path: '/stop'
@@ -1295,6 +1295,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCliCompleteRoute: ApiCliCompleteRoute,
   ApiCliExchangeRoute: ApiCliExchangeRoute,
   ApiCliLoginRoute: ApiCliLoginRouteWithChildren,
+  ApiDomainVerifyOwnershipRoute: ApiDomainVerifyOwnershipRoute,
   ApiMeOrgsRoute: ApiMeOrgsRoute,
   ApiOrganizationsCheckSlugRoute: ApiOrganizationsCheckSlugRoute,
   ApiSubscriptionsOrganizationIdRoute: ApiSubscriptionsOrganizationIdRoute,
@@ -1302,7 +1303,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTunnelCheckSubdomainRoute: ApiTunnelCheckSubdomainRoute,
   ApiTunnelRegisterRoute: ApiTunnelRegisterRoute,
   ApiWebhooksPolarRoute: ApiWebhooksPolarRoute,
-  ApiOrgSlugDomainVerifyOwnershipRoute: ApiOrgSlugDomainVerifyOwnershipRoute,
   ApiOrgSlugDomainsDomainIdRoute: ApiOrgSlugDomainsDomainIdRouteWithChildren,
   ApiOrgSlugPortalPolarRoute: ApiOrgSlugPortalPolarRoute,
   ApiOrgSlugStatsBandwidthRoute: ApiOrgSlugStatsBandwidthRoute,

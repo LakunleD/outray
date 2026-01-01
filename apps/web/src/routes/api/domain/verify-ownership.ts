@@ -1,27 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
 import { and, eq } from "drizzle-orm";
+import { db } from "../../../db";
+import { domains } from "../../../db/app-schema";
 
-import { db } from "../../../../db";
-import { domains } from "../../../../db/app-schema";
-import { requireOrgFromSlug } from "../../../../lib/org";
-
-export const Route = createFileRoute("/api/$orgSlug/domain/verify-ownership")({
+export const Route = createFileRoute("/api/domain/verify-ownership")({
   server: {
     handlers: {
-      POST: async ({ request, params }) => {
+      POST: async ({ request }) => {
         try {
-          const orgResult = await requireOrgFromSlug(request, params.orgSlug);
-          if ("error" in orgResult) return orgResult.error;
-          const { organization } = orgResult;
-
           const body = (await request.json()) as {
             domain?: string;
+            organizationId?: string;
           };
 
-          const { domain } = body;
+          const { domain, organizationId } = body;
 
           if (!domain) {
+            return json(
+              { valid: false, error: "Missing required fields" },
+              { status: 400 },
+            );
+          }
+
+          if (!organizationId) {
             return json(
               { valid: false, error: "Missing required fields" },
               { status: 400 },
@@ -34,7 +36,7 @@ export const Route = createFileRoute("/api/$orgSlug/domain/verify-ownership")({
             .where(
               and(
                 eq(domains.domain, domain),
-                eq(domains.organizationId, organization.id),
+                eq(domains.organizationId, organizationId),
               ),
             );
 
