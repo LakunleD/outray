@@ -2,6 +2,7 @@ import { Navbar } from "./navbar";
 import { DeveloperExperience } from "./developer-experience";
 import { NetworkDiagram } from "./network-diagram";
 import { BringYourOwnDomain } from "./bring-your-own-domain";
+import { MultipleProtocols } from "./multiple-protocols";
 import { OpenSource } from "./opensource";
 import { Hero } from "./hero";
 
@@ -19,6 +20,8 @@ export const Landing = () => {
       <NetworkDiagram />
 
       <BringYourOwnDomain />
+
+      <MultipleProtocols />
 
       <OpenSource />
 
