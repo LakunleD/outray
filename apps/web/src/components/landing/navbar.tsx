@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LayoutDashboard, LogIn, Activity } from "lucide-react";
+import { LayoutDashboard, LogIn } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
 import { SiGithub } from "react-icons/si";
@@ -25,12 +25,11 @@ export const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-            <Activity className="w-5 h-5 text-black" />
-          </div>
-          <span className="text-xl font-bold tracking-tight text-white">
-            OutRay
-          </span>
+          <img
+            src="/logo.png"
+            alt="OutRay Logo"
+            className={`${scrolled ? "w-10" : "w-12"} transition-all`}
+          />
         </Link>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/60">

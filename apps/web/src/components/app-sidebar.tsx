@@ -141,9 +141,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       >
         {!isCollapsed && (
           <div className="flex items-center gap-3 px-2">
-            <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-white/10">
-              <div className="w-4 h-4 bg-black rounded-full" />
-            </div>
+            <img src="/logo.png" alt="OutRay Logo" className="w-8" />
             <p className="font-bold text-white text-lg tracking-tight">
               OutRay
             </p>

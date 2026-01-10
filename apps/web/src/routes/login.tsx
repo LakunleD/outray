@@ -36,9 +36,7 @@ function RouteComponent() {
       <div className="w-full max-w-md space-y-8 p-8">
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-white/10">
-              <div className="w-6 h-6 bg-black rounded-full" />
-            </div>
+            <img src="/logo.png" alt="OutRay Logo" className="w-12" />
             <p className="font-bold text-white text-2xl tracking-tight">
               OutRay
             </p>

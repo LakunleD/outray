@@ -114,9 +114,11 @@ function AdminPage() {
             <div className="absolute inset-0 flex items-center justify-center backdrop-blur-xl bg-black/80 rounded-2xl z-10 transition-all duration-500">
               <div className="w-full max-w-sm p-8 bg-[#070707] border border-white/10 rounded-2xl shadow-2xl">
                 <div className="flex flex-col items-center text-center mb-8">
-                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-white/10 mb-4">
-                    <div className="w-6 h-6 bg-black rounded-full" />
-                  </div>
+                  <img
+                    src="/logo.png"
+                    alt="OutRay Logo"
+                    className="w-12 mb-4"
+                  />
                   <h3 className="text-xl font-bold text-white tracking-tight">
                     Admin Access
                   </h3>

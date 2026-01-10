@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ArrowRight, Copy, Check } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { usePostHog } from "posthog-js/react";
 import { Terminal } from "./Terminal";
 import { BeamGroup } from "./beam-group";
 
 export const Hero = () => {
   const [copied, setCopied] = useState(false);
+  const posthog = usePostHog();
 
   const copyCommand = () => {
     navigator.clipboard.writeText("npm install -g outray");
@@ -31,6 +33,7 @@ export const Hero = () => {
           <a
             href="https://www.ycombinator.com/companies/outray"
             target="_blank"
+            onClick={() => posthog.capture("yc_badge_clicked")}
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-white/60 backdrop-blur-sm hover:bg-white/10 transition-colors"
           >
             <div className="w-4 h-4 bg-[#F26522] flex items-center justify-center rounded-xs">

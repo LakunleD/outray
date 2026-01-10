@@ -43,4 +43,5 @@
 body {
   background-color: var(--color-fd-background);
   color: var(--color-fd-foreground);
+  font-family: "Geom", sans-serif;
 }
