@@ -38,14 +38,6 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const selectedOrg =
     organizations?.find((org) => org.slug === orgSlug) || organizations?.[0];
 
-  const selectedOrganization = selectedOrg
-    ? {
-        id: selectedOrg.id,
-        name: selectedOrg.name,
-        slug: selectedOrg.slug,
-      }
-    : null;
-
   const { data: session } = authClient.useSession();
   const user = session?.user;
 
@@ -161,12 +153,10 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
 
       <OrganizationDropdown
         organizations={organizations!}
-        selectedOrganization={selectedOrganization}
         setSelectedOrganization={setSelectedOrganization}
         isOrgDropdownOpen={isOrgDropdownOpen}
         setIsOrgDropdownOpen={setIsOrgDropdownOpen}
         isCollapsed={isCollapsed}
-        selectedOrg={selectedOrg}
       />
 
       <div className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto scrollbar-hide">
@@ -178,7 +168,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             label={item.label}
             activeOptions={item.activeOptions}
             isCollapsed={isCollapsed}
-            params={{ orgSlug }}
+            params={{ orgSlug: selectedOrg?.slug ?? orgSlug ?? "" }}
           />
         ))}
       </div>
