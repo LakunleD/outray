@@ -18,7 +18,7 @@ import { getPlanLimits } from "@/lib/subscription-plans";
 import { NewTunnelModal } from "@/components/new-tunnel-modal";
 import { LimitModal } from "@/components/limit-modal";
 
-export const Route = createFileRoute("/$orgSlug/tunnels/")({
+export const Route = createFileRoute("/__authenticated/$orgSlug/tunnels/")({
   component: TunnelsView,
 });
 

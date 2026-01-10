@@ -10,7 +10,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-export const Route = createFileRoute("/onboarding")({
+export const Route = createFileRoute("/__authenticated/onboarding")({
   component: Onboarding,
 });
 
@@ -158,7 +158,6 @@ function Onboarding() {
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-white/5 blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-white/5 blur-[120px]" />
       </div>
-
       <div className="w-full max-w-md relative z-10 p-6">
         <div className="mb-8 text-center">
           <div className="w-16 h-16 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-black/50 backdrop-blur-sm group">
@@ -303,5 +302,5 @@ function Onboarding() {
         </p>
       </div>
     </div>
-  );
+  )
 }
