@@ -17,7 +17,7 @@ export function RequestTabContent({ request, details, copiedField, onCopy }: Req
   const bodyInfo = formatBody(details.body);
 
   return (
-    <>
+    <div className="space-y-4">
       {/* General Info */}
       <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
         <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
@@ -105,6 +105,6 @@ export function RequestTabContent({ request, details, copiedField, onCopy }: Req
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
