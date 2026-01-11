@@ -10,7 +10,7 @@ export const Route = createFileRoute("/$orgSlug/settings/organization")({
 });
 
 function OrganizationSettingsView() {
-  const { selectedOrganization } = useAppStore();
+
   const { orgSlug } = Route.useParams();
   const [fullCaptureEnabled, setFullCaptureEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -18,11 +18,9 @@ function OrganizationSettingsView() {
 
   const { data: organizations } = authClient.useListOrganizations();
 
-  const currentOrg = organizations?.find(
-    (org) => org.id === selectedOrganization?.id,
-  );
+  const currentOrg = organizations?.find((org)=>org.slug===orgSlug)
 
-  // Fetch current settings
+
   useEffect(() => {
     const fetchSettings = async () => {
       try {
