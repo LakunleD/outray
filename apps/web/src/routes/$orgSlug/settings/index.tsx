@@ -1,14 +1,13 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { useAppStore } from "@/lib/store";
+import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/$orgSlug/settings/")({
   component: () => {
-    const { selectedOrganization } = useAppStore();
+    const {orgSlug  } = useParams({from:"/$orgSlug/settings"})
     return (
       <Navigate
         to="/$orgSlug/settings/profile"
         params={{
-          orgSlug: selectedOrganization?.slug!,
+          orgSlug
         }}
       />
     );
