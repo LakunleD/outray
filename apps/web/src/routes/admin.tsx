@@ -113,6 +113,7 @@ import { AdminStatsCard } from "@/components/admin/admin-stats-card";
 import { OverviewSkeleton } from "@/components/admin/admin-skeleton";
 
 function AdminOverview({ token }: { token: string }) {
+  const clearToken = useAdminStore((s) => s.clearToken);
   const [period, setPeriod] = useState("24h");
   const [overview, setOverview] = useState<any>(null);
   const [tunnelData, setTunnelData] = useState<any[]>([]);
@@ -125,6 +126,20 @@ function AdminOverview({ token }: { token: string }) {
           appClient.admin.overview(token),
           appClient.admin.stats(period, token),
         ]);
+
+        // Check for auth errors and clear token if unauthorized
+        if ("error" in overviewRes) {
+          if (overviewRes.error === "Unauthorized" || overviewRes.error === "Forbidden") {
+            clearToken();
+            return;
+          }
+        }
+        if ("error" in statsRes) {
+          if (statsRes.error === "Unauthorized" || statsRes.error === "Forbidden") {
+            clearToken();
+            return;
+          }
+        }
 
         if (!("error" in overviewRes)) {
           setOverview(overviewRes);
@@ -147,7 +162,7 @@ function AdminOverview({ token }: { token: string }) {
     fetchData();
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
-  }, [period, token]);
+  }, [period, token, clearToken]);
 
   if (loading) {
     return <OverviewSkeleton />;
