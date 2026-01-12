@@ -28,7 +28,7 @@ export function CreateTokenModal({ isOpen, onClose }: CreateTokenModalProps) {
         throw new Error(response.error);
       }
 
-      return response.token.token;
+      return response.token;
     },
     onSuccess: (token) => {
       if (token) {

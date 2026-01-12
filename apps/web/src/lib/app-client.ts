@@ -155,7 +155,7 @@ export const appClient = {
       apiCall<{ tokens: AuthToken[] }>("get", `/api/${orgSlug}/auth-tokens`),
 
     create: async ({ name, orgSlug }: CreateAuthTokenParams) =>
-      apiCall<{ token: AuthToken }>("post", `/api/${orgSlug}/auth-tokens`, {
+      apiCall<{ token: string }>("post", `/api/${orgSlug}/auth-tokens`, {
         data: { name },
       }),
 
