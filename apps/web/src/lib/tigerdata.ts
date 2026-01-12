@@ -2,7 +2,10 @@ import pg from "pg";
 
 const { Pool } = pg;
 
-const connectionString = process.env.TIGER_DATA_URL!
+if (!process.env.TIGER_DATA_URL) {
+  throw new Error("TIGER_DATA_URL environment variable is required");
+}
+const connectionString = process.env.TIGER_DATA_URL;
 export const pool = new Pool({
   connectionString,
   ssl:{ 
