@@ -5,6 +5,7 @@ import { createAuthMiddleware, organization } from "better-auth/plugins";
 import { sendViaZepto } from "./send-email";
 import { ac, admin, member, owner } from "./permissions";
 import { generateEmail } from "@/email/templates";
+import { isReservedSlug } from "../../../../shared/reserved-slugs";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -111,5 +112,14 @@ export const auth = betterAuth({
         }
       }
     }),
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === "/organization/create") {
+        const body = ctx.body as { slug?: string } | undefined;
+        if (body?.slug && isReservedSlug(body.slug)) {
+          throw new Error("This slug is reserved");
+        }
+      }
+    }),
+    
   },
 });
