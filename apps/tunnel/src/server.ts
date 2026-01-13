@@ -76,6 +76,7 @@ const wsHandler = new WSHandler(wssTunnel, router, tcpProxy, udpProxy);
 console.log("✅ TCP/UDP tunnel support enabled");
 
 const webApiUrl = process.env.WEB_API_URL || "http://localhost:3000/api";
+const internalApiSecret = process.env.INTERNAL_API_SECRET;
 
 async function validateDashboardToken(token: string): Promise<{
   valid: boolean;
@@ -83,10 +84,18 @@ async function validateDashboardToken(token: string): Promise<{
   userId?: string;
   error?: string;
 }> {
+  if (!internalApiSecret) {
+    console.error("INTERNAL_API_SECRET not configured");
+    return { valid: false, error: "Server misconfigured" };
+  }
+
   try {
     const response = await fetch(`${webApiUrl}/dashboard/validate-ws-token`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${internalApiSecret}`,
+      },
       body: JSON.stringify({ token }),
     });
     return (await response.json()) as {
