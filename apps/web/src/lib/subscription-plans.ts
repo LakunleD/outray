@@ -65,12 +65,12 @@ export const SUBSCRIPTION_PLANS = {
     price: 0,
     hidden: true,
     features: {
-      maxTunnels: -1,
-      maxDomains: -1,
-      maxSubdomains: -1,
-      maxMembers: -1,
-      bandwidthPerMonth: -1,
-      retentionDays: -1,
+      maxTunnels: 999999999,
+      maxDomains: 999999999,
+      maxSubdomains: 999999999,
+      maxMembers: 999999999,
+      bandwidthPerMonth: 1024 * 1024 * 1024 * 1024 * 1024, // 1PB
+      retentionDays: 999999999,
       customDomains: true,
       prioritySupport: true,
     },
