@@ -149,6 +149,7 @@ export const Route = createFileRoute("/api/$orgSlug/requests/capture")({
           // Provide more specific error messages
           let errorMessage = "Failed to fetch request capture";
           if (error instanceof Error) {
+            console.error("Error details:", error.message);
             if (
               error.message.includes("SSL") ||
               error.message.includes("ssl")
@@ -167,6 +168,13 @@ export const Route = createFileRoute("/api/$orgSlug/requests/capture")({
             ) {
               errorMessage =
                 "Database authentication failed. Please check credentials.";
+            } else if (
+              error.message.includes("column") ||
+              error.message.includes("does not exist")
+            ) {
+              errorMessage = `Database schema error: ${error.message}`;
+            } else {
+              errorMessage = `Database error: ${error.message}`;
             }
           }
 
